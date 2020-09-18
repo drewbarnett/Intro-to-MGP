@@ -1,0 +1,79 @@
+#define colorRGB	vec3
+#define colorRGBA	vec4
+
+vec4 background (in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = resolution.xy;
+    colorRGB col = 0.5 + 0.5* -cos(time + uv.xyx + vec3(0, 2, 4));
+    colorRGBA background = colorRGBA(col, 1.0);
+    return background;
+}
+
+vec4 background2 (in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = fragCoord/resolution.xy;
+    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+    colorRGBA background = colorRGBA(col, 1.0);
+    return background;
+}
+
+vec4 circle(vec2 uv, vec2 position, float radius, vec3 color){
+    float d = length(position - uv) - radius;
+	float t = clamp(d, 0.0, 1.0);
+	return vec4(color, 1.0 - t);
+}
+
+vec3 colorFlux(in vec2 fragCoord, in vec2 resolution, in float time){
+    
+    vec2 uv = resolution.xy;
+    colorRGB col = 0.5 + 0.5*cos(time + uv.xyx + vec3(0, 2, 4));
+    return col;
+}
+
+vec4 effect3(in vec2 fragCoord, in vec2 resolution, in float time){
+    const float BAR_WIDTH_SCALER = 8.0;
+    vec4 test = vec4(fragCoord, resolution);
+    colorRGBA background = background2(fragCoord, resolution, time) * test / BAR_WIDTH_SCALER;
+    return background;
+}
+
+vec4 effect2(in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = fragCoord.xy;
+	vec2 center = resolution.xy * 0.5; 
+	float radius = 0.25 * resolution.y * abs(cos(time));
+    colorRGB circleColor = colorFlux(fragCoord, resolution, time);
+    vec4 shape = circle(uv, center, radius, circleColor);
+    return shape;
+}
+
+vec4 effect1(in vec2 fragCoord, in vec2 resolution){
+    const float NUMBER_OF_ROWS = 5.0;
+    
+    vec2 stagger = vec2(resolution.x / resolution.y, 1.0);
+    vec2 uv = floor(NUMBER_OF_ROWS * fragCoord.xy * stagger / resolution.xy);
+    vec3 checkerPattern = vec3(mod(uv.x + uv.y, 2.0));
+    vec4 finalPattern = vec4(checkerPattern, 1.0);
+    return finalPattern;
+}
+
+vec4 effect0(in vec2 fragCoord, in vec2 resolution){
+    
+    vec2 uv = fragCoord / resolution;
+    vec3 color = colorRGB(uv, 0.25);
+    float alpha = 1.0;
+    return colorRGBA(color, alpha);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // R, G, B, A => [0,1]
+    
+    //fragColor = effect0(fragCoord, iResolution.xy);
+    //fragColor = effect1(fragCoord, iResolution.xy) - effect0(fragCoord, iResolution.xy);
+    
+    /*
+	colorRGBA layer1 = background(fragCoord, iResolution.xy, iTime);
+	colorRGBA layer2 = effect2(fragCoord, iResolution.xy, iTime);
+	fragColor = mix(layer1, layer2, layer2.a);  
+    */
+    colorRGBA layer1 = effect3(fragCoord, iResolution.xy, iTime);
+    fragColor = layer1;
+}
