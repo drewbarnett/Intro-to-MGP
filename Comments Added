@@ -1,0 +1,86 @@
+//Made by Andrew Barnett
+//Parts based off of https://www.shadertoy.com/view/XsjGDt and https://www.shadertoy.com/view/Xss3Dr
+
+#define colorRGB	vec3
+#define colorRGBA	vec4
+
+//Creates the background to run complementary to the circle
+vec4 background (in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = resolution.xy;
+    colorRGB col = 0.5 + 0.5* -cos(time + uv.xyx + vec3(0, 2, 4));
+    colorRGBA background = colorRGBA(col, 1.0);
+    return background;
+}
+//Makes the colors of the bars
+vec4 barColors (in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = fragCoord/resolution.xy;
+    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+    colorRGBA background = colorRGBA(col, 1.0);
+    return background;
+}
+//Creates the circle
+vec4 circle(vec2 uv, vec2 position, float radius, vec3 color){
+    float d = length(position - uv) - radius;
+	float t = clamp(d, 0.0, 1.0);
+	return vec4(color, 1.0 - t);
+}
+//Changes the color of the circle over time
+vec3 colorFlux(in vec2 fragCoord, in vec2 resolution, in float time){
+    
+    vec2 uv = resolution.xy;
+    colorRGB col = 0.5 + 0.5*cos(time + uv.xyx + vec3(0, 2, 4));
+    return col;
+}
+//Creates moving bars of different colors
+vec4 effect3(in vec2 fragCoord, in vec2 resolution, in float time){
+    const float BAR_WIDTH_SCALER = 8.0;
+    
+    vec4 barMaker = vec4(fragCoord, resolution); //Changes the colored screen to moving bars
+    colorRGBA barColor = barColors(fragCoord, resolution, time) * barMaker / BAR_WIDTH_SCALER; //Creates the effects of the bars
+    return barColor;
+}
+//Creates a circle of differing color and size based on time
+vec4 effect2(in vec2 fragCoord, in vec2 resolution, in float time){
+    vec2 uv = fragCoord.xy; 
+	vec2 center = resolution.xy * 0.5; //Center of the circle
+	float radius = 0.25 * resolution.y * abs(cos(time)); // Radius that grows and shrinks the cicle
+    colorRGB circleColor = colorFlux(fragCoord, resolution, time);// Saves the fluxation of color for the circle
+    vec4 shape = circle(uv, center, radius, circleColor); //Saves the cicle
+    return shape;//Passes the circle
+}
+// Makes a Black checkerboard with white squares
+vec4 effect1(in vec2 fragCoord, in vec2 resolution){
+    const float NUMBER_OF_ROWS = 5.0;
+    
+    vec2 stagger = vec2(resolution.x / resolution.y, 1.0);
+    vec2 uv = floor(NUMBER_OF_ROWS * fragCoord.xy * stagger / resolution.xy);
+    vec3 checkerPattern = vec3(mod(uv.x + uv.y, 2.0));
+    vec4 finalPattern = vec4(checkerPattern, 1.0);
+    return finalPattern;
+}
+//In class color effect
+vec4 effect0(in vec2 fragCoord, in vec2 resolution){
+    
+    vec2 uv = fragCoord / resolution;
+    vec3 color = colorRGB(uv, 0.25);
+    float alpha = 1.0;
+    return colorRGBA(color, alpha);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // R, G, B, A => [0,1]
+    
+    fragColor = effect0(fragCoord, iResolution.xy); //Effect 0
+    //fragColor = effect1(fragCoord, iResolution.xy) - effect0(fragCoord, iResolution.xy);// Adds Effect 0 in the white squares
+    
+    /*
+	colorRGBA layer1 = background(fragCoord, iResolution.xy, iTime);//Puts the background on a layer
+	colorRGBA layer2 = effect2(fragCoord, iResolution.xy, iTime);//Puts the circle on a layer
+	fragColor = mix(layer1, layer2, layer2.a);  //Puts and displays the 2 layers together
+    */
+    /*
+    colorRGBA layer1 = effect3(fragCoord, iResolution.xy, iTime); //Puts the effect in a vec4 container
+    fragColor = layer1; //Displays the above layer/effect3
+	*/
+}
