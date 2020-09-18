@@ -1,0 +1,25 @@
+vec4 effect1(in vec2 fragCoord, in vec2 resolution){
+    const float NUMBER_OF_ROWS = 5.0;
+    
+    vec2 stagger = vec2(resolution.x / resolution.y, 1.0);
+    vec2 uv = floor(NUMBER_OF_ROWS * fragCoord.xy * stagger / resolution.xy);
+    vec3 checkerPattern = vec3(mod(uv.x + uv.y, 2.0));
+    vec4 finalPattern = vec4(checkerPattern, 1.0);
+    return finalPattern;
+}
+
+vec4 effect0(in vec2 fragCoord, in vec2 resolution){
+    
+    vec2 uv = fragCoord / resolution;
+    vec3 color = colorRGB(uv, 0.25);
+    float alpha = 1.0;
+    return colorRGBA(color, alpha);
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    // R, G, B, A => [0,1]
+    
+    //fragColor = effect0(fragCoord, iResolution.xy);
+    fragColor = effect1(fragCoord, iResolution.xy) - effect0(fragCoord, iResolution.xy);\
+}
